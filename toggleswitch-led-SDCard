@@ -1,0 +1,97 @@
+//Modified By: Bo Bowman
+//Original Code: https://create.arduino.cc/projecthub/electropeak/sd-card-module-with-arduino-how-to-read-write-data-37f390 
+//Modified the code so that it uses pin 10 for the SD card (chipselect, or CS, pin on the SD card adapter board) 
+//Used Arduino Uno R3 
+//Used 128GB SD card 
+//Used an SD Card Reader (microSD card reader), purchased here: https://www.amazon.com/gp/product/B06ZYXR7DL/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1 
+//Used a standard MicroSD card adapter board with CS (chipselect), SCK, MOSI, MISO, VCC pins on it. You can also buy one from adafruit here: https://www.adafruit.com/product/254?gclid=CjwKCAjwu5yYBhAjEiwAKXk_eB9RXsR5mKURYSPj84TBgerp9w3ubaqiiiWZdjVea9gIhsvzKWevyBoCCk4QAvD_BwE
+//Used these instructions for wiring: https://learn.adafruit.com/adafruit-micro-sd-breakout-board-card-tutorial/arduino-library 
+//IMPORTANT: You must format your 128GB SD card prior to using it!! 
+//Initialize the SD card to FAT 16 using the following instructions for Mac OSX:  
+//http://arquivo.splat-n.com/scripts/format-a-flash-card-as-fat16-in-mac-os-x/ 
+//See here for additional code on reading and writing data to a MicroSD card: https://create.arduino.cc/projecthub/electropeak/sd-card-module-with-arduino-how-to-read-write-data-37f390
+
+//Step 1: Wire up your SD card properly. https://learn.adafruit.com/adafruit-micro-sd-breakout-board-card-tutorial/arduino-library  
+//Step 2: Wire up your toggle switch and LED properly with 220 Ohm resistor for the LED and and 1k pull-up Resistor for the toggle switch. I have other github code repositories to help you with specifics on setting up the toggle switch and LED wiring, or refer to this url for wiring help: https://www.circuitbasics.com/how-to-set-up-buttons-and-switches-on-the-raspberry-pi/
+//Step 2: Use the SD Card Reader to initialize your SD card to FAT 16 Format (insert your MicroSD into the USB card reader and then into your laptop) http://arquivo.splat-n.com/scripts/format-a-flash-card-as-fat16-in-mac-os-x/ 
+//Step 3: I have modified the code below so that it uses pin 10 (ensure you have the CS of the SD card connected to pin 10 on the Arduino) 
+//Step 4: Upload the code to the Arduino 
+//Step 5: Open Serial Monitor (Tools > Serial Monitor) at 9600 Baud setting in the lower right hand corner of the Serial Monitor window 
+//Step 5: Yay! Now you're ready to go. You should be able to upload, get confirmation in the Serial Monitor that the SD card is working, and be able to use the toggle switch to turn on/off the LED. Use Arduino Examples > SD to located example code from Arduino to use with the SD card to further modify this code for things :) 
+
+//Initialization Code for LED and toggle switch 
+const int pinSwitch = 2;
+const int pinLed =  9; 
+int buttonState = 0; //variable for reading the pushbutton status 
+
+//Initialization Code for ID card 
+#include <SPI.h>
+#include <SD.h>
+File myFile;
+
+void setup() {
+  // put your setup code here, to run once:
+  
+  pinMode(pinLed, OUTPUT);
+  digitalWrite(pinLed, LOW);
+  pinMode(pinSwitch, INPUT);
+
+  // This code helps prevent error during SD card initiliazation. Note that you also must reformat your MicroSD card to FAT 16 format with a USB MicroSD adapter prior to using this code! 
+  pinMode(10,OUTPUT); // set pin (the CS pin for the MicroSD card adapter board) to pin 10, and set it as Output mode 
+  digitalWrite(10,HIGH); //initialize the CS pin of the MicroSD card adapter board to HIGH 
+
+  // Open serial communications and wait for port to open:
+  Serial.begin(9600);
+
+  while (!Serial) {
+; // wait for serial port to connect. Needed for native USB port only
+}
+Serial.print("Initializing SD card...");
+if (!SD.begin(10)) {
+Serial.println("initialization failed!");
+while (1);
+}
+Serial.println("initialization done.");
+// open the file. note that only one file can be open at a time,
+// so you have to close this one before opening another.
+myFile = SD.open("test.txt", FILE_WRITE);
+// if the file opened okay, write to it:
+if (myFile) {
+Serial.print("Writing to test.txt...");
+myFile.println("This is a test file :)");
+myFile.println("testing 1, 2, 3.");
+for (int i = 0; i < 20; i++) {
+myFile.println(i);
+}
+// close the file:
+myFile.close();
+Serial.println("done.");
+} else {
+// if the file didn't open, print an error:
+Serial.println("error opening test.txt");
+}
+
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+   buttonState = digitalRead(pinSwitch);
+
+   if (buttonState == LOW) 
+   {
+    digitalWrite(pinLed, HIGH);
+    }
+
+   else 
+  {
+   digitalWrite(pinLed, LOW);
+    }
+
+  
+}
+
+
+
+
