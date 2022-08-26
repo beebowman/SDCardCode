@@ -1,0 +1,137 @@
+//Modified By: Bo Bowman
+//Used Arduino example code (Arduino Examples > SD > CardInfo code) 
+//Modified the code so that it says const int chipSelect = 10 instead of const int chipSelect = 4 
+//Used Arduino Uno R3 
+//Used 128GB SD card 
+//Used an SD Card Reader (microSD card reader), purchased here: https://www.amazon.com/gp/product/B06ZYXR7DL/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1 
+//Used a standard MicroSD card adapter board with CS (chipselect), SCK, MOSI, MISO, VCC pins on it. You can also buy one from adafruit here: https://www.adafruit.com/product/254?gclid=CjwKCAjwu5yYBhAjEiwAKXk_eB9RXsR5mKURYSPj84TBgerp9w3ubaqiiiWZdjVea9gIhsvzKWevyBoCCk4QAvD_BwE
+//Used these instructions for wiring: https://learn.adafruit.com/adafruit-micro-sd-breakout-board-card-tutorial/arduino-library 
+//IMPORTANT: You must format your 128GB SD card prior to using it!! 
+//Initialize the SD card to FAT 16 using the following instructions for Mac OSX:  
+//http://arquivo.splat-n.com/scripts/format-a-flash-card-as-fat16-in-mac-os-x/ 
+
+//Step 1: Wire up your SD card properly. https://learn.adafruit.com/adafruit-micro-sd-breakout-board-card-tutorial/arduino-library  
+//Step 2: Use the SD Card Reader to initialize your SD card to FAT 16 Format (insert your MicroSD into the USB card reader and then into your laptop) http://arquivo.splat-n.com/scripts/format-a-flash-card-as-fat16-in-mac-os-x/ 
+//Step 3: I have modified the code below so that it says const int chipSelect = 10 (ensure you have the CS of the SD card connected to pin 10 on the Arduino) 
+//Step 4: Upload the code to the Arduino and open Tools > Serial Monitor to ensure the SD card can be properly read 
+//Step 5: Yay! Now you're ready to go. Use Arduino Examples > SD to located example code from Arduino to use with the SD card :) 
+
+/*
+  SD card test
+
+  This example shows how use the utility libraries on which the'
+  SD library is based in order to get info about your SD card.
+  Very useful for testing a card when you're not sure whether its working or not.
+
+  The circuit:
+    SD card attached to SPI bus as follows:
+ ** MOSI - pin 11 on Arduino Uno/Duemilanove/Diecimila
+ ** MISO - pin 12 on Arduino Uno/Duemilanove/Diecimila
+ ** CLK - pin 13 on Arduino Uno/Duemilanove/Diecimila
+ ** CS - depends on your SD card shield or module.
+ 		Pin 4 used here for consistency with other Arduino examples
+
+
+  created  28 Mar 2011
+  by Limor Fried
+  modified 9 Apr 2012
+  by Tom Igoe
+*/
+// include the SD library:
+#include <SPI.h>
+#include <SD.h>
+
+// set up variables using the SD utility library functions:
+Sd2Card card;
+SdVolume volume;
+SdFile root;
+
+// change this to match your SD shield or module;
+// Arduino Ethernet shield: pin 4
+// Adafruit SD shields and modules: pin 10
+// Sparkfun SD shield: pin 8
+// MKRZero SD: SDCARD_SS_PIN
+
+//*****Modified the below line of code***** 
+const int chipSelect = 10; //Bo Bowman modified this section of the code to be 10 instead of 4, since the CS pin on the SD adapter is connected to pin 10 on the Arduino. 
+
+
+void setup() {
+  // Open serial communications and wait for port to open:
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+
+
+  Serial.print("\nInitializing SD card...");
+
+  // we'll use the initialization code from the utility libraries
+  // since we're just testing if the card is working!
+  if (!card.init(SPI_HALF_SPEED, chipSelect)) {
+    Serial.println("initialization failed. Things to check:");
+    Serial.println("* is a card inserted?");
+    Serial.println("* is your wiring correct?");
+    Serial.println("* did you change the chipSelect pin to match your shield or module?");
+    while (1);
+  } else {
+    Serial.println("Wiring is correct and a card is present.");
+  }
+
+  // print the type of card
+  Serial.println();
+  Serial.print("Card type:         ");
+  switch (card.type()) {
+    case SD_CARD_TYPE_SD1:
+      Serial.println("SD1");
+      break;
+    case SD_CARD_TYPE_SD2:
+      Serial.println("SD2");
+      break;
+    case SD_CARD_TYPE_SDHC:
+      Serial.println("SDHC");
+      break;
+    default:
+      Serial.println("Unknown");
+  }
+
+  // Now we will try to open the 'volume'/'partition' - it should be FAT16 or FAT32
+  if (!volume.init(card)) {
+    Serial.println("Could not find FAT16/FAT32 partition.\nMake sure you've formatted the card");
+    while (1);
+  }
+
+  Serial.print("Clusters:          ");
+  Serial.println(volume.clusterCount());
+  Serial.print("Blocks x Cluster:  ");
+  Serial.println(volume.blocksPerCluster());
+
+  Serial.print("Total Blocks:      ");
+  Serial.println(volume.blocksPerCluster() * volume.clusterCount());
+  Serial.println();
+
+  // print the type and size of the first FAT-type volume
+  uint32_t volumesize;
+  Serial.print("Volume type is:    FAT");
+  Serial.println(volume.fatType(), DEC);
+
+  volumesize = volume.blocksPerCluster();    // clusters are collections of blocks
+  volumesize *= volume.clusterCount();       // we'll have a lot of clusters
+  volumesize /= 2;                           // SD card blocks are always 512 bytes (2 blocks are 1KB)
+  Serial.print("Volume size (Kb):  ");
+  Serial.println(volumesize);
+  Serial.print("Volume size (Mb):  ");
+  volumesize /= 1024;
+  Serial.println(volumesize);
+  Serial.print("Volume size (Gb):  ");
+  Serial.println((float)volumesize / 1024.0);
+
+  Serial.println("\nFiles found on the card (name, date and size in bytes): ");
+  root.openRoot(volume);
+
+  // list all files in the card with date and size
+  root.ls(LS_R | LS_DATE | LS_SIZE);
+}
+
+void loop(void) {
+}
