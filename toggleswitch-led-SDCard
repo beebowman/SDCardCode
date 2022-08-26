@@ -11,6 +11,22 @@
 //http://arquivo.splat-n.com/scripts/format-a-flash-card-as-fat16-in-mac-os-x/ 
 //See here for additional code on reading and writing data to a MicroSD card: https://create.arduino.cc/projecthub/electropeak/sd-card-module-with-arduino-how-to-read-write-data-37f390
 
+// Connect wiring as follows https://www.circuitbasics.com/how-to-set-up-buttons-and-switches-on-the-raspberry-pi/ 
+// Use a 1k Ohm resistor for the pull-up resistor for the toggle switch circuit 
+// Use a 220 Ohm resistor for the LED 
+// Rocker on/off switch (basic toggle switch) from Amazon
+// https://www.amazon.com/gp/product/B07XC5KB8D/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1 
+
+// Wiring for the LED: 
+// Connect 220 ohm resitor to the side of the LED which is longer, and then into pin 9
+// Connect the other side of the LED (shorter side) to GND 
+
+// Wiring for the Toggle Switch (includes pullup resistor): 
+// Connect the black/GND side of the Toggle switch to pin 2 
+// Connect the other (red) side of the Toggle switch to a splitter 
+// One side of the splitter goes to 5V OR to 3.3V (either works) 
+// The other side of the splitter goes to 1k Ohm resistor and then to GND 
+
 //Step 1: Wire up your SD card properly. https://learn.adafruit.com/adafruit-micro-sd-breakout-board-card-tutorial/arduino-library  
 //Step 2: Wire up your toggle switch and LED properly with 220 Ohm resistor for the LED and and 1k pull-up Resistor for the toggle switch. I have other github code repositories to help you with specifics on setting up the toggle switch and LED wiring, or refer to this url for wiring help: https://www.circuitbasics.com/how-to-set-up-buttons-and-switches-on-the-raspberry-pi/
 //Step 2: Use the SD Card Reader to initialize your SD card to FAT 16 Format (insert your MicroSD into the USB card reader and then into your laptop) http://arquivo.splat-n.com/scripts/format-a-flash-card-as-fat16-in-mac-os-x/ 
