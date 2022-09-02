@@ -1,0 +1,100 @@
+
+//Code By: Bo Bowman
+//This code connects toggle switch, LED, and SD card (microSD card) together on a breadboard. 
+//Includes Fritzing diagram 
+
+//Connect wiring as follows: https://create.arduino.cc/projecthub/GeneralSpud/toggle-switch-3763a2 
+//Connect switch pin to 3 (instead of pin 4 from the above url) 
+//Connect led pin to 9 (instead of pin 5 from the above url) 
+//Use a 220 Ohm resistor for the LED
+//Use a 1k Ohm resistor for the toggle switch 
+
+//Used Arduino Uno R3 
+//Used 128GB SD card 
+//Used an SD Card Reader (microSD card reader), purchased here: https://www.amazon.com/gp/product/B06ZYXR7DL/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1 
+//Used a standard MicroSD card adapter board with CS (chipselect), SCK, MOSI, MISO, VCC pins on it. You can also buy one from adafruit here: https://www.adafruit.com/product/254?gclid=CjwKCAjwu5yYBhAjEiwAKXk_eB9RXsR5mKURYSPj84TBgerp9w3ubaqiiiWZdjVea9gIhsvzKWevyBoCCk4QAvD_BwE
+//Used these instructions for wiring: https://learn.adafruit.com/adafruit-micro-sd-breakout-board-card-tutorial/arduino-library 
+//IMPORTANT: You must format your 128GB SD card prior to using it!! 
+//Initialize the SD card to FAT 16 using the following instructions for Mac OSX:  
+//http://arquivo.splat-n.com/scripts/format-a-flash-card-as-fat16-in-mac-os-x/ 
+//See here for additional code on reading and writing data to a MicroSD card: https://create.arduino.cc/projecthub/electropeak/sd-card-module-with-arduino-how-to-read-write-data-37f390
+
+//Wiring for the SD card: 
+//Connect CS to pin 10
+//Connect SCK to pin 13 
+//Connect MOSI to pin 11
+//Connect MISO to pin 12
+//Connect VCC along the + line of the breadboard, to the right of the wire that connects the + line to 5V pin on the Arduino (the left side should go to the toggle switch) 
+//Connect GND to pin GND 
+
+// Rocker on/off switch (basic toggle switch) from Amazon
+// https://www.amazon.com/gp/product/B07XC5KB8D/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1 
+
+//Initialization Code for LED and toggle switch 
+int switch_pin = 3; 
+int led_pin = 9; 
+
+//Initialization Code for ID card 
+#include <SPI.h>
+#include <SD.h>
+File myFile;
+
+void setup() {
+  //setup code runs only once
+
+  //Setup Code for switch & LED 
+  pinMode(switch_pin, INPUT); //set mode for pin switch 3 to input 
+  pinMode(led_pin,OUTPUT); //set mode for led pin 9 to output 
+
+  //Setup Code for SD Card 
+  
+    // This code helps prevent error during SD card initiliazation. Note that you also must reformat your MicroSD card to FAT 16 format with a USB MicroSD adapter prior to using this code! 
+  pinMode(10,OUTPUT); // set pin (the CS pin for the MicroSD card adapter board) to pin 10, and set it as Output mode 
+  digitalWrite(10,HIGH); //initialize the CS pin of the MicroSD card adapter board to HIGH 
+
+  // Open serial communications and wait for port to open:
+  Serial.begin(9600);
+
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+  Serial.print("Initializing SD card...");
+  if (!SD.begin(10)) {
+    Serial.println("initialization failed!");
+    while (1);
+  }
+  Serial.println("initialization done.");
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  myFile = SD.open("test.txt", FILE_WRITE);
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.print("Writing to test.txt...");
+    myFile.println("This is a test file :)");
+    myFile.println("testing 1, 2, 3.");
+    for (int i = 0; i < 20; i++) {
+        myFile.println(i);
+    }
+    // close the file:
+    myFile.close();
+    Serial.println("done."); 
+  } 
+  else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening test.txt");
+  }
+  
+ 
+}
+
+void loop() {
+  // main code here runs repeatedly:
+
+  if (digitalRead(switch_pin) == HIGH){
+    digitalWrite(led_pin,LOW);
+    
+  }
+  if (digitalRead(switch_pin)==LOW){
+    digitalWrite(led_pin,HIGH);
+  }
+}
